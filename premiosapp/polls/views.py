@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from .models import Question, Choice
+
 #from polls.models import Question, Choice
 
 def index(request):
-    return HttpResponse("This is the main page.")
+    doesntmatter = Question.objects.all()
+    return render(request,"polls/index.html",{"latest_question_list":doesntmatter})
 
 
 def detail(request,question):
