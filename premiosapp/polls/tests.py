@@ -46,16 +46,13 @@ class QuestionIndexViewTestCase(TestCase):
         self.assertQuerysetEqual(response.context["latest_question_list"],[])
     
 
-
-
-
     def test_not_publish_future_posts(self):
         """ This test intends to publish a post submited in the future"""
         fecha = timezone.now() + datetime.timedelta(days=-10)
         q = Question.objects.create(question_text="no importa", pub_date = fecha )
         response = self.client.get(reverse('polls:index'))
-
         self.assertQuerysetEqual(response.context["latest_question_list"],[q])
+
 
     def test_past_questions(self):
         """ This test checks if the past questions are displayed correctly"""
@@ -65,3 +62,43 @@ class QuestionIndexViewTestCase(TestCase):
         self.assertQuerysetEqual(response.context['latest_question_list'],[w])
 
 
+    def test_two_future_questions(self):
+        """ This test proves two differents questions in the index in order
+        to test if anyone is showing in the main page."""
+        time1 = timezone.now() + datetime.timedelta(days=24)
+        time2 = timezone.now() + datetime.timedelta(days=23)
+        Question.objects.create(question_text="text1",pub_date=time1)
+        Question.objects.create(question_text="text2",pub_date=time2)
+        response= self.client.get(reverse("polls:index"))
+        self.assertQuerysetEqual(response.context["latest_question_list"],[])
+
+    def test_two_past_questions(self):
+        """this test intends to post two questions in the past and
+        checking out if there were posted correctly as it should."""
+        time1 = timezone.now() + datetime.timedelta(days=-12)
+        time2 = timezone.now() + datetime.timedelta(days=-28)
+        past1=Question.objects.create(question_text="text past 1", pub_date=time1)
+        past2=Question.objects.create(question_text="text past 2", pub_date=time2)
+        response = self.client.get(reverse("polls:index"))
+        #self.assertQuerysetEqual(response.context["latest_question_list"],[past1,past2])
+        self.assertNotEqual(response.context["latest_question_list"],[])
+
+class QuestionDetailViewTest(TestCase):
+    
+    def test_future_question(self):
+        # Test para saber si se publicarán o no preguntas futuras 
+        time_future = timezone.now() + datetime.timedelta(days=30)
+        future_question = Question.objects.create(question_text="future question",pub_date=time_future )
+        url = reverse("polls:detail", args=(future_question.id,))
+        response= self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+
+
+    def test_detail_view(self):
+        # test para comprobar si se publican exitosamente las publicaciones pasadas. 
+        time_past = timezone.now() + datetime.timedelta(days=-30)
+        past_question = Question.objects.create(question_text="past question", pub_date=time_past)
+        url = reverse("polls:detail", args=(past_question.id,))
+        response = self.client.get(url)
+        self.assertContains(response, past_question.question_text)

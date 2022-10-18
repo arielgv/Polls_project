@@ -4,7 +4,6 @@ from . import views
 
 app_name = "polls"
 #esto evita el hard coding 
-
 urlpatterns = [
 
     path("", views.IndexView.as_view(template_name="polls/index.html",context_object_name="latest_question_list"), name="index"),
