@@ -10,6 +10,10 @@ class ChoiceInline(admin.StackedInline):
 class QuestionAdmin(admin.ModelAdmin):
     fields=["pub_date", "question_text"]
     inlines = [ChoiceInline]
-    
+    list_display= ("question_text" , "pub_date", "recently_published")
+    list_filter = ["pub_date"]
+    search_fields = ["question_text"]
+
+
 admin.site.register(Question, QuestionAdmin)
 
